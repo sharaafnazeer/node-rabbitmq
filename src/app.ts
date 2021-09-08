@@ -13,8 +13,6 @@ createConnection().then(value => {
 
     app.use(express.json());
     console.log('Listening to port: 8000');
-
-
     
     app.use('/api', rootRouter);
     app.get('*', (req, res) => res.status(200).send({
