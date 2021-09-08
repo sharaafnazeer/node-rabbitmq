@@ -115,6 +115,23 @@ var ProductController = /** @class */ (function () {
                 }
             });
         }); };
+        this.likeProduct = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+            var product, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.productRepo = (0, typeorm_1.getRepository)(this.model);
+                        return [4 /*yield*/, this.productRepo.findOne(req.params.id)];
+                    case 1:
+                        product = _a.sent();
+                        product.likes++;
+                        return [4 /*yield*/, this.productRepo.save(product)];
+                    case 2:
+                        result = _a.sent();
+                        return [2 /*return*/, res.send(result)];
+                }
+            });
+        }); };
         this.model = product_1.Product;
         this.getProducts = this.getProducts.bind(this);
     }

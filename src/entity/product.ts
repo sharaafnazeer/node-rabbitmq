@@ -13,5 +13,5 @@ export class Product{
     image: string;
 
     @Column({default: 0})
-    lines: number;
+    likes: number;
 }

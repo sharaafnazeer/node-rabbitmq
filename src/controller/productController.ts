@@ -43,6 +43,14 @@ class ProductController {
         const result = await this.productRepo.delete(req.params.id);
         return res.send(result);
     }
+
+    likeProduct = async (req: Request, res: Response) => {
+        this.productRepo = getRepository(this.model);
+        const product = await this.productRepo.findOne(req.params.id);
+        product.likes++
+        const result = await this.productRepo.save(product);
+        return res.send(result);
+    }
 }
 
 export default ProductController;
