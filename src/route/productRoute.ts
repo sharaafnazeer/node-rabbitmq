@@ -1,7 +1,7 @@
 import { Router } from 'express';
 let router = Router();
 
-// Import Controllers
+// Import Controller
 import ProductController from '../controller/productController';
 const productController = new ProductController();
 
@@ -10,5 +10,6 @@ router.get('/', productController.getProducts);
 router.get('/:id', productController.getProduct);
 router.post('/', productController.saveProduct);
 router.put('/:id', productController.updateProduct);
+router.delete('/:id', productController.deleteProduct);
 
 export default router;

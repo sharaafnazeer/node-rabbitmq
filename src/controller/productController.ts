@@ -37,6 +37,12 @@ class ProductController {
         const result = await this.productRepo.save(product);
         return res.send(result);
     }
+
+    deleteProduct = async (req: Request, res: Response) => {
+        this.productRepo = getRepository(this.model);
+        const result = await this.productRepo.delete(req.params.id);
+        return res.send(result);
+    }
 }
 
 export default ProductController;
