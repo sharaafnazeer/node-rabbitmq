@@ -1,6 +1,7 @@
-import { Product } from './../entity/product';
+import Product from './../entity/product';
 import { Request, Response } from 'express';
-import { getRepository } from "typeorm";
+import { getMongoRepository } from "typeorm";
+import rabbitmq from '../util/rabbitmq';
 
 class ProductController {
     productRepo: any = null;
@@ -8,48 +9,80 @@ class ProductController {
 
     constructor() {
         this.model = Product;
-        this.getProducts = this.getProducts.bind(this);        
     }
 
     getProducts = async (req: Request, res: Response) => {
-        this.productRepo = getRepository(this.model);
-        const products = await this.productRepo.find();
-        return res.send(products);
+        try {
+            this.productRepo = getMongoRepository(this.model);
+            const products = await this.productRepo.find();
+            return res.send(products);
+        } catch (ex) {
+            console.error(ex)
+        }
     }
 
-    saveProduct = async (req: Request, res: Response) => {
-        this.productRepo = getRepository(this.model);
-        const product = await this.productRepo.create(req.body);
-        const result = await this.productRepo.save(product);
-        return res.send(result);
+    saveProduct = async (eventProduct) => {
+        try {
+            const product = new Product()
+            product.mainId = parseInt(eventProduct.id.toString())
+            product.title = eventProduct.title
+            product.image = eventProduct.image
+            product.likes = eventProduct.likes
+            this.productRepo = getMongoRepository(this.model);
+            const result = await this.productRepo.save(product);
+            return result;
+        } catch (ex) {
+            console.error(ex)
+        }
+
     }
 
     getProduct = async (req: Request, res: Response) => {
-        this.productRepo = getRepository(this.model);
+        this.productRepo = getMongoRepository(this.model);
         const product = await this.productRepo.findOne(req.params.id);
         return res.send(product);
     }
 
-    updateProduct = async (req: Request, res: Response) => {
-        this.productRepo = getRepository(this.model);
-        const product = await this.productRepo.findOne(req.params.id);
-        this.productRepo.merge(product, req.body);
-        const result = await this.productRepo.save(product);
-        return res.send(result);
+    updateProduct = async (eventProduct) => {
+        try {
+            this.productRepo = getMongoRepository(this.model);
+            const product = await this.productRepo.findOne({ mainId: parseInt(eventProduct.id) })
+            this.productRepo.merge(product, {
+                title: eventProduct.title,
+                image: eventProduct.image,
+                likes: eventProduct.likes
+            });
+            const result = await this.productRepo.save(product);
+            return result;
+        } catch (ex) {
+            console.error(ex)
+        }
     }
 
-    deleteProduct = async (req: Request, res: Response) => {
-        this.productRepo = getRepository(this.model);
-        const result = await this.productRepo.delete(req.params.id);
-        return res.send(result);
+    deleteProduct = async (eventProductId) => {
+        try {
+            this.productRepo = getMongoRepository(this.model);
+            console.log(eventProductId)
+            const result = await this.productRepo.deleteOne({ 'mainId': parseInt(eventProductId) });
+            return result;
+        } catch (ex) {
+            console.error(ex)
+        }
     }
 
     likeProduct = async (req: Request, res: Response) => {
-        this.productRepo = getRepository(this.model);
-        const product = await this.productRepo.findOne(req.params.id);
-        product.likes++
-        const result = await this.productRepo.save(product);
-        return res.send(result);
+        try {
+            this.productRepo = getMongoRepository(this.model);
+            const product = await this.productRepo.findOne(req.params.id);
+            product.likes++
+            const result = await this.productRepo.save(product);
+            const broker = await rabbitmq.getInstance();
+            await broker.send('product_liked', Buffer.from(JSON.stringify(product.mainId)));
+            return res.send(result);
+        } catch (ex) {
+            console.error(ex)
+        }
+
     }
 }
 

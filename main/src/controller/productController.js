@@ -35,40 +35,58 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var product_1 = require("./../entity/product");
+var product_1 = __importDefault(require("./../entity/product"));
 var typeorm_1 = require("typeorm");
+var rabbitmq_1 = __importDefault(require("../util/rabbitmq"));
 var ProductController = /** @class */ (function () {
     function ProductController() {
         var _this = this;
         this.productRepo = null;
         this.model = null;
         this.getProducts = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var products;
+            var products, ex_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.productRepo = (0, typeorm_1.getRepository)(this.model);
+                        _a.trys.push([0, 2, , 3]);
+                        this.productRepo = (0, typeorm_1.getMongoRepository)(this.model);
                         return [4 /*yield*/, this.productRepo.find()];
                     case 1:
                         products = _a.sent();
                         return [2 /*return*/, res.send(products)];
+                    case 2:
+                        ex_1 = _a.sent();
+                        console.error(ex_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         }); };
-        this.saveProduct = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var product, result;
+        this.saveProduct = function (eventProduct) { return __awaiter(_this, void 0, void 0, function () {
+            var product, result, ex_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.productRepo = (0, typeorm_1.getRepository)(this.model);
-                        return [4 /*yield*/, this.productRepo.create(req.body)];
-                    case 1:
-                        product = _a.sent();
+                        _a.trys.push([0, 2, , 3]);
+                        product = new product_1.default();
+                        product.mainId = parseInt(eventProduct.id.toString());
+                        product.title = eventProduct.title;
+                        product.image = eventProduct.image;
+                        product.likes = eventProduct.likes;
+                        this.productRepo = (0, typeorm_1.getMongoRepository)(this.model);
                         return [4 /*yield*/, this.productRepo.save(product)];
-                    case 2:
+                    case 1:
                         result = _a.sent();
-                        return [2 /*return*/, res.send(result)];
+                        return [2 /*return*/, result];
+                    case 2:
+                        ex_2 = _a.sent();
+                        console.error(ex_2);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         }); };
@@ -77,7 +95,7 @@ var ProductController = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.productRepo = (0, typeorm_1.getRepository)(this.model);
+                        this.productRepo = (0, typeorm_1.getMongoRepository)(this.model);
                         return [4 /*yield*/, this.productRepo.findOne(req.params.id)];
                     case 1:
                         product = _a.sent();
@@ -85,42 +103,60 @@ var ProductController = /** @class */ (function () {
                 }
             });
         }); };
-        this.updateProduct = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var product, result;
+        this.updateProduct = function (eventProduct) { return __awaiter(_this, void 0, void 0, function () {
+            var product, result, ex_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.productRepo = (0, typeorm_1.getRepository)(this.model);
-                        return [4 /*yield*/, this.productRepo.findOne(req.params.id)];
+                        _a.trys.push([0, 3, , 4]);
+                        this.productRepo = (0, typeorm_1.getMongoRepository)(this.model);
+                        return [4 /*yield*/, this.productRepo.findOne({ mainId: parseInt(eventProduct.id) })];
                     case 1:
                         product = _a.sent();
-                        this.productRepo.merge(product, req.body);
+                        this.productRepo.merge(product, {
+                            title: eventProduct.title,
+                            image: eventProduct.image,
+                            likes: eventProduct.likes
+                        });
                         return [4 /*yield*/, this.productRepo.save(product)];
                     case 2:
                         result = _a.sent();
-                        return [2 /*return*/, res.send(result)];
+                        return [2 /*return*/, result];
+                    case 3:
+                        ex_3 = _a.sent();
+                        console.error(ex_3);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         }); };
-        this.deleteProduct = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var result;
+        this.deleteProduct = function (eventProductId) { return __awaiter(_this, void 0, void 0, function () {
+            var result, ex_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.productRepo = (0, typeorm_1.getRepository)(this.model);
-                        return [4 /*yield*/, this.productRepo.delete(req.params.id)];
+                        _a.trys.push([0, 2, , 3]);
+                        this.productRepo = (0, typeorm_1.getMongoRepository)(this.model);
+                        console.log(eventProductId);
+                        return [4 /*yield*/, this.productRepo.deleteOne({ 'mainId': parseInt(eventProductId) })];
                     case 1:
                         result = _a.sent();
-                        return [2 /*return*/, res.send(result)];
+                        return [2 /*return*/, result];
+                    case 2:
+                        ex_4 = _a.sent();
+                        console.error(ex_4);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         }); };
         this.likeProduct = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var product, result;
+            var product, result, broker, ex_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.productRepo = (0, typeorm_1.getRepository)(this.model);
+                        _a.trys.push([0, 5, , 6]);
+                        this.productRepo = (0, typeorm_1.getMongoRepository)(this.model);
                         return [4 /*yield*/, this.productRepo.findOne(req.params.id)];
                     case 1:
                         product = _a.sent();
@@ -128,12 +164,22 @@ var ProductController = /** @class */ (function () {
                         return [4 /*yield*/, this.productRepo.save(product)];
                     case 2:
                         result = _a.sent();
+                        return [4 /*yield*/, rabbitmq_1.default.getInstance()];
+                    case 3:
+                        broker = _a.sent();
+                        return [4 /*yield*/, broker.send('product_liked', Buffer.from(JSON.stringify(product.mainId)))];
+                    case 4:
+                        _a.sent();
                         return [2 /*return*/, res.send(result)];
+                    case 5:
+                        ex_5 = _a.sent();
+                        console.error(ex_5);
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/];
                 }
             });
         }); };
-        this.model = product_1.Product;
-        this.getProducts = this.getProducts.bind(this);
+        this.model = product_1.default;
     }
     return ProductController;
 }());

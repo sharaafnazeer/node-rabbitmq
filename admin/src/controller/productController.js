@@ -38,6 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var product_1 = require("./../entity/product");
 var typeorm_1 = require("typeorm");
+var rabbitmq_1 = require("../util/rabbitmq");
 var ProductController = /** @class */ (function () {
     function ProductController() {
         var _this = this;
@@ -57,10 +58,11 @@ var ProductController = /** @class */ (function () {
             });
         }); };
         this.saveProduct = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var product, result;
+            var product, result, broker, ex_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 5, , 6]);
                         this.productRepo = (0, typeorm_1.getRepository)(this.model);
                         return [4 /*yield*/, this.productRepo.create(req.body)];
                     case 1:
@@ -68,7 +70,18 @@ var ProductController = /** @class */ (function () {
                         return [4 /*yield*/, this.productRepo.save(product)];
                     case 2:
                         result = _a.sent();
+                        return [4 /*yield*/, rabbitmq_1.default.getInstance()];
+                    case 3:
+                        broker = _a.sent();
+                        return [4 /*yield*/, broker.send('product_created', Buffer.from(JSON.stringify(result)))];
+                    case 4:
+                        _a.sent();
                         return [2 /*return*/, res.send(result)];
+                    case 5:
+                        ex_1 = _a.sent();
+                        console.log(ex_1);
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/];
                 }
             });
         }); };
@@ -86,10 +99,11 @@ var ProductController = /** @class */ (function () {
             });
         }); };
         this.updateProduct = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var product, result;
+            var product, result, broker, ex_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 5, , 6]);
                         this.productRepo = (0, typeorm_1.getRepository)(this.model);
                         return [4 /*yield*/, this.productRepo.findOne(req.params.id)];
                     case 1:
@@ -98,37 +112,66 @@ var ProductController = /** @class */ (function () {
                         return [4 /*yield*/, this.productRepo.save(product)];
                     case 2:
                         result = _a.sent();
+                        return [4 /*yield*/, rabbitmq_1.default.getInstance()];
+                    case 3:
+                        broker = _a.sent();
+                        return [4 /*yield*/, broker.send('product_updated', Buffer.from(JSON.stringify(result)))];
+                    case 4:
+                        _a.sent();
                         return [2 /*return*/, res.send(result)];
+                    case 5:
+                        ex_2 = _a.sent();
+                        console.log(ex_2);
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/];
                 }
             });
         }); };
         this.deleteProduct = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var result;
+            var result, broker, ex_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 4, , 5]);
                         this.productRepo = (0, typeorm_1.getRepository)(this.model);
                         return [4 /*yield*/, this.productRepo.delete(req.params.id)];
                     case 1:
                         result = _a.sent();
+                        return [4 /*yield*/, rabbitmq_1.default.getInstance()];
+                    case 2:
+                        broker = _a.sent();
+                        return [4 /*yield*/, broker.send('product_deleted', Buffer.from(JSON.stringify(req.params.id)))];
+                    case 3:
+                        _a.sent();
                         return [2 /*return*/, res.send(result)];
+                    case 4:
+                        ex_3 = _a.sent();
+                        console.log(ex_3);
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
         }); };
-        this.likeProduct = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var product, result;
+        this.likeProduct = function (eventProductId) { return __awaiter(_this, void 0, void 0, function () {
+            var product, result, ex_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 3, , 4]);
                         this.productRepo = (0, typeorm_1.getRepository)(this.model);
-                        return [4 /*yield*/, this.productRepo.findOne(req.params.id)];
+                        return [4 /*yield*/, this.productRepo.findOne(eventProductId)];
                     case 1:
                         product = _a.sent();
                         product.likes++;
                         return [4 /*yield*/, this.productRepo.save(product)];
                     case 2:
                         result = _a.sent();
-                        return [2 /*return*/, res.send(result)];
+                        return [2 /*return*/, result];
+                    case 3:
+                        ex_4 = _a.sent();
+                        console.log(ex_4);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         }); };
